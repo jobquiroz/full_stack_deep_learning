@@ -11,7 +11,7 @@ FC2_DIM = 128
 FC_DROPOUT = 0.5
 
 class MLP(nn.Module):
-    """Simple MLP suitable for recognizing single characters."""
+    """Simple MLP suitable for recognizing single characters. """
 
     def __init__(
         self,
