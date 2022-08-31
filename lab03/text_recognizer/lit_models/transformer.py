@@ -97,7 +97,9 @@ class TransformerLitModel(BaseImageToTextLitModel):
         """Maps a list of lists of integers to a list of strings using the lit model's mapping."""
         return [self.map(k, ignore) for k in ks]
 
-    def get_preds(self, logitlikes: torch.Tensor, replace_after_end: bool = True) -> torch.Tensor:
+    def get_preds(
+        self, logitlikes: torch.Tensor, replace_after_end: bool = True
+    ) -> torch.Tensor:
         """Converts logit-like Tensors into prediction indices, optionally overwritten after end token index.
 
         Parameters

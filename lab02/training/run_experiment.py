@@ -8,11 +8,17 @@ from pytorch_lightning.utilities.rank_zero import rank_zero_info, rank_zero_only
 import torch
 
 from text_recognizer import lit_models
-from training.util import DATA_CLASS_MODULE, import_class, MODEL_CLASS_MODULE, setup_data_and_model_from_args
+from training.util import (
+    DATA_CLASS_MODULE,
+    import_class,
+    MODEL_CLASS_MODULE,
+    setup_data_and_model_from_args,
+)
 
 # In order to ensure reproducible experiments, we must set random seeds.
 np.random.seed(42)
 torch.manual_seed(42)
+
 
 def _setup_parser():
     """Set up Python's ArgumentParser with data, model, trainer, and other arguments."""
@@ -38,7 +44,10 @@ def _setup_parser():
         help=f"String identifier for the model class, relative to {MODEL_CLASS_MODULE}.",
     )
     parser.add_argument(
-        "--load_checkpoint", type=str, default=None, help="If passed, loads a model from the provided path."
+        "--load_checkpoint",
+        type=str,
+        default=None,
+        help="If passed, loads a model from the provided path.",
     )
     parser.add_argument(
         "--stop_early",
@@ -66,10 +75,12 @@ def _setup_parser():
     parser.add_argument("--help", "-h", action="help")
     return parser
 
+
 @rank_zero_only
 def _ensure_logging_dir(experiment_dir):
     """Create the logging directory via the rank-zero process, if necessary."""
     Path(experiment_dir).mkdir(parents=True, exist_ok=True)
+
 
 def main():
     """
@@ -95,7 +106,9 @@ def main():
     lit_model_class = lit_models.BaseLitModel
 
     if args.load_checkpoint is not None:
-        lit_model = lit_model_class.load_from_checkpoint(args.load_checkpoint, args=args, model=model)
+        lit_model = lit_model_class.load_from_checkpoint(
+            args.load_checkpoint, args=args, model=model
+        )
     else:
         lit_model = lit_model_class(args=args, model=model)
 
@@ -104,7 +117,9 @@ def main():
     logger = pl.loggers.TensorBoardLogger(log_dir)
     experiment_dir = logger.log_dir
 
-    goldstar_metric = "validation/cer" if args.loss in ("transformer",) else "validation/loss"
+    goldstar_metric = (
+        "validation/cer" if args.loss in ("transformer",) else "validation/loss"
+    )
     filename_format = "epoch={epoch:04d}-validation.loss={validation/loss:.3f}"
     checkpoint_callback = pl.callbacks.ModelCheckpoint(
         save_top_k=5,
@@ -127,7 +142,9 @@ def main():
 
     trainer = pl.Trainer.from_argparse_args(args, callbacks=callbacks, logger=logger)
 
-    trainer.tune(lit_model, datamodule=data)  # If passing --auto_lr_find, this will set learning rate
+    trainer.tune(
+        lit_model, datamodule=data
+    )  # If passing --auto_lr_find, this will set learning rate
 
     trainer.fit(lit_model, datamodule=data)
 
